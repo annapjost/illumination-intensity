@@ -8,8 +8,8 @@ from ij.io import OpenDialog
 # there are two ways to use the BioFormats importer: using the BioFormats API, and using the 
 # IJ namespace function run() to use the standard macro language input.
 
-# ultimately I want to figure out the BioFormats API method because I think there's 
-# more functionality, but for now I can try the run() method
+# BioFormats API has more options I think, but for now the run() thing is working.  
+# can I see this in git diff??
 
 od = OpenDialog("Choose a file", None)
 filename = od.getFileName()
