@@ -67,7 +67,7 @@ IJ.run("Bio-Formats Importer", "open=" + stackpath + " color_mode=Grayscale view
 
 # subtract offset
 
-IJ.run("Subtract...", "value=" + str(offset) + " stack")
+IJ.run("Subtract...", "value=" + str(offset) + " stack") # could redo this with pixel manipulation as shown here: http://fiji.sc/Jython_Scripting
 
 
 imp = IJ.getImage()
@@ -154,6 +154,8 @@ max = rt.getValue("Max", 0)
 min = rt.getValue("Min", 0)
 rolloff = (min*1.0/max)*100
 
+IJ.run("Fire")
+
 IJ.log("Percent illumination roll-off: " + str(rolloff))
 
 # close the annoying results window
@@ -161,7 +163,7 @@ resultswin = WM.getWindow("Results")
 resultswin.removeNotify()
 
 # tile windows so you can see all the beautiful output better
-IJ.run("Tile");
+IJ.run("Tile")
 
 
 
