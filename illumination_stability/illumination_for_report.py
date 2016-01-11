@@ -10,6 +10,7 @@ from ij.gui import ProfilePlot as PP
 from ij.measure import ResultsTable
 from ij.gui import Plot as Plot
 from ij.gui import PlotWindow as PlotWindow
+from loci.plugins import BF
 
 def getOffset():
     """User points to the dark image, which is opened and then mean is taken for offset
@@ -91,7 +92,10 @@ def illum(srcDir, currentDir, filename, offset, showImages):
 
     # define the path and open the stack 
     stackpath = os.path.join(currentDir, filename)
-    IJ.run("Bio-Formats Importer", "open=" + stackpath + " color_mode=Grayscale view=Hyperstack stack_order=XYCZT")
+    #IJ.run("Bio-Formats Importer", "open=" + stackpath + " color_mode=Grayscale view=Hyperstack stack_order=XYCZT")
+    imps = BF.openImagePlus(stackpath)
+    for imp in imps:
+        imp.show()
     
     # subtract the offset 
     IJ.run("Subtract...", "value=" + str(offset) + " stack") # could redo this with pixel manipulation as shown here: http://fiji.sc/Jython_Scripting
@@ -198,6 +202,13 @@ def CSVsetup():
     filename = gd.getNextString()
     fullpath = os.path.join(savepath, filename)
     return fullpath
+    
+def chooseFormat():
+    gd = GenericDialog("file format")
+    gd.addRadioButtonGroup("Select the software used to acquire your data", ["Metamorph", "Elements"], 2, 1, "Metamorph")
+    gd.showDialog()
+    format = gd.getNextRadioButton()
+    return format
       
 
 def run():
@@ -211,27 +222,37 @@ def run():
     if not offset:
         IJ.log("you clicked cancel!")
         return
+        
+    # choose Metamorph or Elements and set appropriate extension
     
-    # set the directory with the timelapse and set extension to .nd
+    format = chooseFormat()
+    if not format:
+        IJ.log("you clicked cancel!")
+        return
+    if format == "Elements":
+        ext = ".nd2"
+    elif format == "Metamorph":
+        ext = ".nd"    
+        
+    
+    # set the directory with the timelapse 
     srcDir = IJ.getDirectory("Input directory")
     if not srcDir:
         IJ.log("you clicked cancel!")
         return
-    ext = ".nd"
     
+    # set up the CSV file
     CSVpath = CSVsetup()
+    # if the user clicks cancel, CSVsetup() returns False and the run function will end
     if not CSVpath:
         IJ.log("you clicked cancel!")
         return
     
-    # open the CSV file
+    # open the CSV file and create the CSV writer
     f = open(CSVpath, 'wb')
-    
-    # create CSV writer
     writer = csv.writer(f)
     
     # ask user whether they'd like to see image output vs. just the csv file
-    
     gd = GenericDialog("output settings")
     gd.addMessage("Would you like to display plots and images in addition to saving the summary data?")
     gd.addCheckbox("Yes, please show me images", False)
@@ -253,8 +274,11 @@ def run():
             writer.writerow(row)
     f.close()
     
-    if showImages:
-        IJ.run("Tile")
+    print "finished run()"
+    #print "before tile"
+    #if showImages:
+    #    IJ.run("Tile")
+    #print "after tile"
     
 run()
 
